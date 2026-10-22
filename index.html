@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The System Design Atlas — 93 concepts</title>
+<meta name="description" content="93 production system-design concepts clustered into 13 areas, each mapped to a curated lecture and a hands-on lab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b12; --panel:#0d1421; --panel2:#111a29; --line:#1e2a3d;
+    --ink:#e8eef8; --muted:#8fa3bf; --dim:#64748b;
+    --accent:#5eead4; --link:#7dd3fc;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(56,189,248,.16), transparent 60%),
+      radial-gradient(800px 480px at 88% 4%, rgba(167,139,250,.14), transparent 62%),
+      radial-gradient(900px 600px at 50% 110%, rgba(45,212,191,.10), transparent 60%);
+  }
+  .wrap{max-width:1560px; margin:0 auto; padding:0 28px}
+
+  /* ---------- hero ---------- */
+  header.hero{padding:64px 0 34px}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--accent);
+    border:1px solid rgba(94,234,212,.28); background:rgba(94,234,212,.07);
+    padding:7px 13px; border-radius:999px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  h1{
+    margin:22px 0 0; font-size:clamp(2.6rem,6vw,4.6rem); line-height:1.02;
+    letter-spacing:-.035em; font-weight:800;
+  }
+  h1 em{
+    font-style:normal;
+    background:linear-gradient(100deg,#5eead4 0%,#7dd3fc 45%,#c084fc 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lede{max-width:760px; margin:20px 0 0; color:var(--muted); font-size:clamp(15px,1.4vw,17.5px)}
+  .stats{display:flex; flex-wrap:wrap; gap:12px; margin-top:32px}
+  .stat{
+    flex:1 1 170px; background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+    border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;
+  }
+  .stat b{display:block; font-size:1.9rem; line-height:1; letter-spacing:-.03em}
+  .stat span{display:block; margin-top:7px; font-size:11.5px; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--dim); font-family:"JetBrains Mono",monospace}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    position:sticky; top:0; z-index:40; margin-top:34px;
+    background:rgba(7,11,18,.82); backdrop-filter:blur(14px) saturate(140%);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:14px 0;
+  }
+  .toolbar .wrap{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .search{position:relative; flex:1 1 300px; min-width:220px}
+  .search input{
+    width:100%; background:var(--panel); color:var(--ink);
+    border:1px solid var(--line); border-radius:10px; padding:10px 14px 10px 38px;
+    font:inherit; font-size:14px; outline:none; transition:border-color .18s, box-shadow .18s;
+  }
+  .search input:focus{border-color:rgba(94,234,212,.55); box-shadow:0 0 0 3px rgba(94,234,212,.12)}
+  .search svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); opacity:.5}
+  kbd{
+    font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--dim);
+    border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:1px 5px;
+  }
+  .chips{display:flex; gap:7px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; max-width:100%}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    white-space:nowrap; cursor:pointer; font-size:12.5px; font-weight:500;
+    background:transparent; color:var(--muted); border:1px solid var(--line);
+    padding:7px 12px; border-radius:999px; transition:.16s; display:inline-flex; align-items:center; gap:7px;
+  }
+  .chip:hover{color:var(--ink); border-color:#2c3e57}
+  .chip.on{background:rgba(255,255,255,.09); color:var(--ink); border-color:#38506f}
+  .chip i{width:7px;height:7px;border-radius:50%;background:var(--c,#64748b); display:inline-block}
+  .toggles{display:flex; align-items:center; gap:14px; margin-left:auto}
+  .switch{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); cursor:pointer; user-select:none}
+  .switch input{accent-color:var(--accent); width:15px; height:15px}
+  .progress{display:flex; align-items:center; gap:10px; font-family:"JetBrains Mono",monospace; font-size:11.5px; color:var(--dim)}
+  .bar{width:110px; height:5px; border-radius:99px; background:#182436; overflow:hidden}
+  .bar>div{height:100%; width:0%; background:linear-gradient(90deg,#5eead4,#7dd3fc); transition:width .25s}
+
+  /* ---------- table ---------- */
+  main{padding:8px 0 80px}
+  table{width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed}
+  col.c-num{width:58px} col.c-topic{width:182px} col.c-used{width:21%}
+  col.c-case{width:22%} col.c-vid{width:15%} col.c-prac{width:13%} col.c-course{width:11%}
+  thead th{
+    position:sticky; top:var(--thead-top,66px); z-index:30; text-align:left;
+    background:#0a111c; border-bottom:1px solid var(--line);
+    padding:12px 14px; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--dim); font-weight:600; font-family:"JetBrains Mono",monospace;
+  }
+  tbody.sec{--c:#64748b}
+  tr.sechead td{
+    padding:30px 14px 12px; border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg, color-mix(in srgb, var(--c) 16%, transparent), transparent 65%);
+  }
+  .sechead .inner{display:flex; align-items:center; gap:12px}
+  .sechead .badge{
+    width:28px; height:28px; flex:none; border-radius:8px; display:grid; place-items:center;
+    font-family:"JetBrains Mono",monospace; font-size:12px; font-weight:600; color:#04070c;
+    background:var(--c); box-shadow:0 0 22px color-mix(in srgb, var(--c) 55%, transparent);
+  }
+  .sechead h2{margin:0; font-size:1.06rem; letter-spacing:-.015em}
+  .sechead .rng{font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--dim)}
+  .sechead .count{margin-left:auto; font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--dim)}
+
+  tr.item td{
+    padding:15px 14px; border-bottom:1px solid rgba(30,42,61,.62);
+    vertical-align:top; font-size:13.4px; color:#b8c7dc;
+  }
+  tr.item{transition:background .14s}
+  tr.item:hover td{background:rgba(255,255,255,.028)}
+  tr.item.done td{opacity:.42}
+  tr.item.done .topic{text-decoration:line-through; text-decoration-color:rgba(148,163,184,.7)}
+
+  td.num{position:relative; font-family:"JetBrains Mono",monospace; font-size:12px; color:var(--dim)}
+  td.num .n{display:block; margin-top:6px}
+  .chk{display:block; width:15px; height:15px; cursor:pointer}
+  .chk input{position:absolute; opacity:0; width:0; height:0}
+  .chk span{
+    display:block; width:15px; height:15px; border-radius:4px;
+    border:1.5px solid #33465f; transition:.15s; position:relative;
+  }
+  .chk:hover span{border-color:var(--c)}
+  .chk input:checked + span{background:var(--c); border-color:var(--c)}
+  .chk input:checked + span::after{
+    content:""; position:absolute; left:4px; top:1px; width:4px; height:8px;
+    border:solid #04070c; border-width:0 2px 2px 0; transform:rotate(42deg);
+  }
+  td.topic{font-weight:650; color:#f1f6ff; font-size:13.8px; letter-spacing:-.01em}
+  td.used,td.case{color:#9fb2cc; line-height:1.48}
+  a.res{
+    display:inline-flex; gap:7px; align-items:flex-start; text-decoration:none;
+    color:var(--link); font-size:12.6px; line-height:1.4;
+    border-bottom:1px solid transparent; transition:.15s;
+  }
+  a.res:hover{border-bottom-color:currentColor}
+  a.res .rt{font-size:10px; opacity:.65; margin-top:2px; flex:none}
+  .dur{
+    display:inline-block; margin-left:5px; font-family:"JetBrains Mono",monospace;
+    font-size:9.5px; color:#64748b; background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.07); border-radius:4px; padding:1px 4px;
+  }
+  .course a{text-decoration:none; display:inline-block}
+  .course .code{
+    display:inline-block; font-family:"JetBrains Mono",monospace; font-size:11.5px;
+    color:#c7d2fe; border:1px solid #2b3a55; background:rgba(99,102,241,.10);
+    padding:3px 8px; border-radius:6px; transition:.15s;
+  }
+  .course a:hover .code{border-color:#4c5f85; background:rgba(99,102,241,.2)}
+  .course .rest{display:block; margin-top:5px; font-size:11px; color:var(--dim); line-height:1.35}
+  .none{color:#3f4f66}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line); padding:36px 0 64px; color:var(--dim); font-size:12.5px}
+  footer .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:26px; margin-bottom:26px}
+  footer h3{margin:0 0 10px; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); font-family:"JetBrains Mono",monospace}
+  footer ol{margin:0; padding-left:18px; line-height:1.75}
+  footer ol b{color:var(--ink); font-weight:600}
+  .path{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px}
+  .empty{padding:60px 14px; text-align:center; color:var(--dim); font-family:"JetBrains Mono",monospace; font-size:13px}
+
+  @media (max-width:1080px){
+    thead th{top:0}
+    col.c-used,col.c-case{width:auto}
+    table{min-width:1120px}
+    main .wrap{overflow-x:auto; padding-bottom:10px}
+  }
+  @media print{
+    body{background:#fff; color:#111}
+    body::before,.toolbar,footer .path{display:none}
+    header.hero{padding:0 0 18px}
+    h1{font-size:26pt} h1 em{color:#111;background:none;-webkit-text-fill-color:#111}
+    .lede{color:#444}
+    .stat{border-color:#ddd;background:#fff}
+    table{min-width:0; font-size:8pt}
+    thead th{position:static; background:#f4f4f4; color:#333}
+    tr.item td{color:#222; border-color:#e5e5e5}
+    tr.item{break-inside:avoid}
+    tr.sechead td{background:#f0f0f0}
+    a.res,a{color:#0645ad}
+    .chk{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span>Learning atlas · 93 concepts</div>
+    <h1>The System Design <em>Atlas</em></h1>
+    <p class="lede">Every concept from the list, clustered the way it actually shows up in production — with one curated lecture and one place to practise it. Tick a row when it clicks; your progress is saved in this browser.</p>
+    <div class="stats">
+      <div class="stat"><b>93</b><span>Concepts</span></div>
+      <div class="stat"><b>13</b><span>Clusters</span></div>
+      <div class="stat"><b>137</b><span>Verified resources</span></div>
+      <div class="stat"><b id="pctStat">0%</b><span>Completed</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search concepts, e.g. “sharding”, “webhook”, “probe”…" autocomplete="off">
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip on" data-f="all">All</button>
+      <button class="chip" data-f="1" style="--c:#38bdf8"><i></i>Traffic &amp; Edge</button><button class="chip" data-f="2" style="--c:#a78bfa"><i></i>Deploy &amp; Environments</button><button class="chip" data-f="3" style="--c:#fb7185"><i></i>Failure &amp; Resilience</button><button class="chip" data-f="4" style="--c:#fbbf24"><i></i>Async &amp; Messaging</button><button class="chip" data-f="5" style="--c:#34d399"><i></i>Realtime &amp; Integrations</button><button class="chip" data-f="6" style="--c:#60a5fa"><i></i>Data at Scale</button><button class="chip" data-f="7" style="--c:#f472b6"><i></i>Concurrency &amp; Coordination</button><button class="chip" data-f="8" style="--c:#2dd4bf"><i></i>Runtime &amp; Resources</button><button class="chip" data-f="9" style="--c:#c084fc"><i></i>Caching &amp; Edge Delivery</button><button class="chip" data-f="10" style="--c:#4ade80"><i></i>Observability &amp; SLOs</button><button class="chip" data-f="11" style="--c:#f97316"><i></i>Security &amp; Identity</button><button class="chip" data-f="12" style="--c:#22d3ee"><i></i>Networking &amp; APIs</button><button class="chip" data-f="13" style="--c:#94a3b8"><i></i>Operations &amp; Culture</button>
+    </div>
+    <div class="toggles">
+      <label class="switch"><input type="checkbox" id="hideDone"> hide completed</label>
+      <div class="progress"><span id="cnt">0/93</span><div class="bar"><div id="barFill"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <table>
+      <colgroup>
+        <col class="c-num"><col class="c-topic"><col class="c-used"><col class="c-case">
+        <col class="c-vid"><col class="c-prac"><col class="c-course">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>#</th><th>Topic</th><th>Used for</th><th>Use case</th>
+          <th>Video lecture · direct</th><th>Practise it</th><th>MIT / Stanford</th>
+        </tr>
+      </thead>
+      <tbody class="sec" data-s="1" style="--c:#38bdf8">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">01</div>
+            <h2>Traffic &amp; Edge</h2>
+            <span class="rng">1–5</span>
+            <span class="count">5 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="1" data-s="1">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="1"><span></span></label><span class="n">01</span></td>
+            <td class="topic">Rate Limiting</td>
+            <td class="used">Caps requests per client per time window (token bucket, sliding window) to protect capacity and be fair.</td>
+            <td class="case">100 req/s per API key on a payments API; 5 login attempts/min per IP plus account.</td>
+            <td class="res"><a class="res" href="https://youtu.be/MIJFyUPG4Z4" target="_blank" rel="noopener"><span class="rt">▶</span>Design a distributed rate limiter — Hello Interview</a><span class="dur">56 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="2" data-s="1">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="2"><span></span></label><span class="n">02</span></td>
+            <td class="topic">Caching</td>
+            <td class="used">Stores computed results close to the consumer so you skip slow recomputation or a slow origin.</td>
+            <td class="case">Redis in front of Postgres for product pages; immutable assets cached for a year with hashed filenames.</td>
+            <td class="res"><a class="res" href="https://youtu.be/dGAgxozNWFE" target="_blank" rel="noopener"><span class="rt">▶</span>Cache systems every developer should know — ByteByteGo</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="3" data-s="1">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="3"><span></span></label><span class="n">03</span></td>
+            <td class="topic">Load Balancing</td>
+            <td class="used">Spreads traffic across replicas using round robin, least-connections, or consistent hashing.</td>
+            <td class="case">An ALB round-robins 10 API pods; least-connections keeps long-lived WebSocket sessions even.</td>
+            <td class="res"><a class="res" href="https://youtu.be/JJ_T2aDOta0" target="_blank" rel="noopener"><span class="rt">▶</span>Load balancer: L4 vs L7 — Shubh Patel</a><span class="dur">27 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="4" data-s="1">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="4"><span></span></label><span class="n">04</span></td>
+            <td class="topic">Reverse Proxies</td>
+            <td class="used">Sits in front of app servers: terminates TLS, routes, buffers slow clients, compresses, hides topology.</td>
+            <td class="case">nginx in front of Node apps; Envoy sidecars terminating mTLS inside a service mesh.</td>
+            <td class="res"><a class="res" href="https://youtu.be/xo5V9g9joFs" target="_blank" rel="noopener"><span class="rt">▶</span>Proxy vs reverse proxy vs load balancer — TechWorld with Nana</a><span class="dur">13 min</span></td>
+            <td class="res"><a class="res" href="https://labs.play-with-docker.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>Play with Docker</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="5" data-s="1">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="5"><span></span></label><span class="n">05</span></td>
+            <td class="topic">API Gateways</td>
+            <td class="used">A reverse proxy with API awareness: auth, per-route quotas, key management, request transformation.</td>
+            <td class="case">Kong or AWS API Gateway in front of 20 services, enforcing plan-based quotas at the edge.</td>
+            <td class="res"><a class="res" href="https://youtu.be/6ULyxuHKxg8" target="_blank" rel="noopener"><span class="rt">▶</span>What is an API gateway? — ByteByteGo</a><span class="dur">3 min</span></td>
+            <td class="res"><a class="res" href="https://microservices.io/patterns/" target="_blank" rel="noopener"><span class="rt">⌘</span>microservices.io patterns</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="2" style="--c:#a78bfa">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">02</div>
+            <h2>Deploy &amp; Environments</h2>
+            <span class="rng">6–9 · 48–54 · 86–90</span>
+            <span class="count">16 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="6" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="6"><span></span></label><span class="n">06</span></td>
+            <td class="topic">CI/CD</td>
+            <td class="used">Every push automatically builds, tests, and ships; continuous delivery keeps everything deployable.</td>
+            <td class="case">GitHub Actions pipeline: lint → test → build image → deploy to staging → manual gate → prod, 15×/day.</td>
+            <td class="res"><a class="res" href="https://youtu.be/AknbizcLq4w" target="_blank" rel="noopener"><span class="rt">▶</span>CI/CD explained — TechWorld with Nana</a><span class="dur">21 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/bregman-arie/devops-exercises" target="_blank" rel="noopener"><span class="rt">⌘</span>DevOps Exercises</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="7" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="7"><span></span></label><span class="n">07</span></td>
+            <td class="topic">Docker</td>
+            <td class="used">Packages an app plus its dependencies into an immutable image that runs identically anywhere.</td>
+            <td class="case">Multi-stage build producing a 40 MB distroless image for a Go service; same image in every env.</td>
+            <td class="res"><a class="res" href="https://youtu.be/3c-iBn73dDE" target="_blank" rel="noopener"><span class="rt">▶</span>Docker tutorial for beginners — TechWorld with Nana</a><span class="dur">2h 46m</span></td>
+            <td class="res"><a class="res" href="https://labs.play-with-docker.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>Play with Docker</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="8" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="8"><span></span></label><span class="n">08</span></td>
+            <td class="topic">Kubernetes</td>
+            <td class="used">A control loop that reconciles actual cluster state to declared state (pods, services, deployments).</td>
+            <td class="case">Deployment + HPA + Service for a stateless API; rolling updates gated by readiness probes.</td>
+            <td class="res"><a class="res" href="https://youtu.be/X48VuDVv0do" target="_blank" rel="noopener"><span class="rt">▶</span>Kubernetes tutorial for beginners — TechWorld with Nana</a><span class="dur">3h 37m</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="9" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="9"><span></span></label><span class="n">09</span></td>
+            <td class="topic">Service Discovery</td>
+            <td class="used">Lets services find each other’s live instances instead of hardcoding IPs and ports.</td>
+            <td class="case">Consul/Eureka registry; instances register on boot and deregister on failed health checks.</td>
+            <td class="res"><a class="res" href="https://youtu.be/ecuEkmFs5Vk" target="_blank" rel="noopener"><span class="rt">▶</span>Service discovery with Eureka — ByteMonk</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://developer.hashicorp.com/consul" target="_blank" rel="noopener"><span class="rt">⌘</span>HashiCorp Consul</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="48" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="48"><span></span></label><span class="n">48</span></td>
+            <td class="topic">Feature Flags</td>
+            <td class="used">Runtime switches that decouple deploying code from releasing it to users.</td>
+            <td class="case">Ship dark code, enable for 5% of users, kill instantly if the error rate moves.</td>
+            <td class="res"><a class="res" href="https://youtu.be/AJa2B-twtG4" target="_blank" rel="noopener"><span class="rt">▶</span>What are feature flags? — IBM Technology</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://12factor.net/" target="_blank" rel="noopener"><span class="rt">⌘</span>The Twelve-Factor App</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="49" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="49"><span></span></label><span class="n">49</span></td>
+            <td class="topic">Blue-Green Deployment</td>
+            <td class="used">Two identical environments; traffic flips from blue to green atomically.</td>
+            <td class="case">Green stack on the new schema; flip the LB, keep blue warm for an instant rollback.</td>
+            <td class="res"><a class="res" href="https://youtu.be/W6HANd8c9t4" target="_blank" rel="noopener"><span class="rt">▶</span>In-depth intro to blue-green deploys — Arpit Bhayani</a><span class="dur">29 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="50" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="50"><span></span></label><span class="n">50</span></td>
+            <td class="topic">Canary Releases</td>
+            <td class="used">Sends a small slice of traffic to the new version, watches signals, then ramps up.</td>
+            <td class="case">1% → 10% → 50% → 100% with automated abort on a p99 regression or error-rate bump.</td>
+            <td class="res"><a class="res" href="https://youtu.be/0QhUhrWGB9k" target="_blank" rel="noopener"><span class="rt">▶</span>Deployment strategies with demos — Abhishek Veeramalla</a><span class="dur">52 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="51" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="51"><span></span></label><span class="n">51</span></td>
+            <td class="topic">Rolling Deployments</td>
+            <td class="used">Replaces replicas in batches, bounded by surge and unavailability budgets.</td>
+            <td class="case">maxSurge=25%, maxUnavailable=0 for a zero-downtime rollout of a 20-pod service.</td>
+            <td class="res"><a class="res" href="https://youtu.be/2iKgnUZvsDM" target="_blank" rel="noopener"><span class="rt">▶</span>How Kubernetes rolling updates work — Aman Pathak</a><span class="dur">24 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="52" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="52"><span></span></label><span class="n">52</span></td>
+            <td class="topic">Rollbacks</td>
+            <td class="used">Reverts to a known-good artifact; often rolling forward is the safer move.</td>
+            <td class="case">helm rollback or kubectl rollout undo after a bad release; requires backward-compatible migrations.</td>
+            <td class="res"><a class="res" href="https://youtu.be/JDoRXJNr4es" target="_blank" rel="noopener"><span class="rt">▶</span>Rollback a Kubernetes deployment — DevOps Pro</a><span class="dur">22 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="53" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="53"><span></span></label><span class="n">53</span></td>
+            <td class="topic">Health Checks</td>
+            <td class="used">Active probes that decide whether an instance should receive traffic at all.</td>
+            <td class="case">/healthz returns 503 when the DB pool is exhausted so the LB drains the instance.</td>
+            <td class="res"><a class="res" href="https://youtu.be/Uy3XV6A8KgA" target="_blank" rel="noopener"><span class="rt">▶</span>Failover and health checks — Engineering Systems</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="54" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="54"><span></span></label><span class="n">54</span></td>
+            <td class="topic">Liveness &amp; Readiness Probes</td>
+            <td class="used">Liveness restarts a hung process; readiness withholds traffic until the instance is warm.</td>
+            <td class="case">Readiness fails during a 30 s cache warm-up; liveness catches a deadlocked worker and restarts it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/aTlQBofihJQ" target="_blank" rel="noopener"><span class="rt">▶</span>liveness, readiness and startup probes — Rahul Wagh</a><span class="dur">18 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="86" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="86"><span></span></label><span class="n">86</span></td>
+            <td class="topic">Infrastructure as Code</td>
+            <td class="used">Declares infrastructure in version-controlled files so it is reviewable and reproducible.</td>
+            <td class="case">Every prod change lands as a PR with a terraform plan attached before anyone applies it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/POPP2WTJ8es" target="_blank" rel="noopener"><span class="rt">▶</span>What is infrastructure as code? — TechWorld with Nana</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://developer.hashicorp.com/terraform/tutorials" target="_blank" rel="noopener"><span class="rt">⌘</span>Terraform tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="87" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="87"><span></span></label><span class="n">87</span></td>
+            <td class="topic">Terraform</td>
+            <td class="used">Declarative IaC with state as source of truth and a plan/apply workflow.</td>
+            <td class="case">VPC + EKS + RDS in modules; remote state in S3 with DynamoDB locking.</td>
+            <td class="res"><a class="res" href="https://youtu.be/l5k1ai_GBDE" target="_blank" rel="noopener"><span class="rt">▶</span>Terraform in 15 minutes — TechWorld with Nana</a><span class="dur">18 min</span></td>
+            <td class="res"><a class="res" href="https://developer.hashicorp.com/terraform/tutorials" target="_blank" rel="noopener"><span class="rt">⌘</span>Terraform tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="88" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="88"><span></span></label><span class="n">88</span></td>
+            <td class="topic">Helm Charts</td>
+            <td class="used">Templated, versioned Kubernetes manifests with per-environment values.</td>
+            <td class="case">One chart, three values files (dev/stage/prod), pinned chart versions per release.</td>
+            <td class="res"><a class="res" href="https://youtu.be/7A5cH8iqgHU" target="_blank" rel="noopener"><span class="rt">▶</span>Helm, end to end — Abhishek Veeramalla</a><span class="dur">53 min</span></td>
+            <td class="res"><a class="res" href="https://helm.sh/docs/chart_template_guide/" target="_blank" rel="noopener"><span class="rt">⌘</span>Helm chart template guide</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="89" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="89"><span></span></label><span class="n">89</span></td>
+            <td class="topic">Build Caching</td>
+            <td class="used">Reuses previous build outputs: Docker layers, dependency caches, remote CI caches.</td>
+            <td class="case">Layer cache + pnpm store + CI remote cache takes a pipeline from 9 minutes to 40 seconds.</td>
+            <td class="res"><a class="res" href="https://youtu.be/RP-z4dqRTZA" target="_blank" rel="noopener"><span class="rt">▶</span>How Dockerfile layers and caching work — Benjamin Porter</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/wagoodman/dive" target="_blank" rel="noopener"><span class="rt">⌘</span>dive (image analysis)</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="90" data-s="2">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="90"><span></span></label><span class="n">90</span></td>
+            <td class="topic">Dependency Hell</td>
+            <td class="used">Conflicting transitive version requirements that break builds or force upgrades.</td>
+            <td class="case">Two libraries pin different major versions of the same protobuf runtime; lockfiles and upgrade cadence fix it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/9AyfXGHu56Y" target="_blank" rel="noopener"><span class="rt">▶</span>How npm resolves dependency hell — Mayank</a><span class="dur">10 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/bregman-arie/devops-exercises" target="_blank" rel="noopener"><span class="rt">⌘</span>DevOps Exercises</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="3" style="--c:#fb7185">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">03</div>
+            <h2>Failure &amp; Resilience</h2>
+            <span class="rng">10–14 · 77–78</span>
+            <span class="count">7 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="10" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="10"><span></span></label><span class="n">10</span></td>
+            <td class="topic">Circuit Breakers</td>
+            <td class="used">Stops calling a failing dependency: fail fast, then half-open to probe for recovery.</td>
+            <td class="case">Payment provider starts 500-ing; breaker opens 30 s and checkout degrades to “pay later”.</td>
+            <td class="res"><a class="res" href="https://youtu.be/HRS9mIfiNn4" target="_blank" rel="noopener"><span class="rt">▶</span>Circuit breaker in microservices — sudoCODE</a><span class="dur">12 min</span></td>
+            <td class="res"><a class="res" href="https://resilience4j.readme.io/" target="_blank" rel="noopener"><span class="rt">⌘</span>Resilience4j</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="11" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="11"><span></span></label><span class="n">11</span></td>
+            <td class="topic">Timeouts</td>
+            <td class="used">A hard deadline on every network call, ideally propagated as a shrinking budget.</td>
+            <td class="case">2 s gRPC deadline at the edge; downstream calls inherit 1.5 s so work stops when the caller gives up.</td>
+            <td class="res"><a class="res" href="https://youtu.be/HZdE1dNLX9s" target="_blank" rel="noopener"><span class="rt">▶</span>Timeouts, retries, backoff with jitter — MsDeep Singh</a><span class="dur">27 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/Shopify/toxiproxy" target="_blank" rel="noopener"><span class="rt">⌘</span>Toxiproxy (fault injection)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="12" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="12"><span></span></label><span class="n">12</span></td>
+            <td class="topic">Retries</td>
+            <td class="used">Re-attempts transient failures only: idempotent operations, capped attempts, jittered waits.</td>
+            <td class="case">Retry a 503 twice with jitter; never retry a 400 or a non-idempotent POST.</td>
+            <td class="res"><a class="res" href="https://youtu.be/KxK8lWtxNFM" target="_blank" rel="noopener"><span class="rt">▶</span>Retry patterns explained — Systemic Stack</a><span class="dur">16 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/Shopify/toxiproxy" target="_blank" rel="noopener"><span class="rt">⌘</span>Toxiproxy (fault injection)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="13" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="13"><span></span></label><span class="n">13</span></td>
+            <td class="topic">Exponential Backoff</td>
+            <td class="used">Waits 1 s, 2 s, 4 s, 8 s… between attempts, with jitter to break synchronization.</td>
+            <td class="case">Client backs off with full jitter after a 429; five attempts max, then surface a real error.</td>
+            <td class="res"><a class="res" href="https://youtu.be/EW2Cc0r2mbc" target="_blank" rel="noopener"><span class="rt">▶</span>Retries and exponential backoff — glich.stream</a><span class="dur">31 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/Shopify/toxiproxy" target="_blank" rel="noopener"><span class="rt">⌘</span>Toxiproxy (fault injection)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="14" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="14"><span></span></label><span class="n">14</span></td>
+            <td class="topic">Idempotency</td>
+            <td class="used">Guarantees repeating the same request has the same effect as doing it once.</td>
+            <td class="case">Stripe-style Idempotency-Key header; INSERT … ON CONFLICT DO NOTHING for dedupe.</td>
+            <td class="res"><a class="res" href="https://youtu.be/dZTkBeB_dmg" target="_blank" rel="noopener"><span class="rt">▶</span>Idempotency in APIs — Arkynate</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="77" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="77"><span></span></label><span class="n">77</span></td>
+            <td class="topic">Network Partitions</td>
+            <td class="used">A split where nodes are alive but cannot reach each other, forcing a consistency-vs-availability choice.</td>
+            <td class="case">The Raft majority keeps serving and the minority rejects writes rather than diverging.</td>
+            <td class="res"><a class="res" href="https://youtu.be/43TDfUNsM3E" target="_blank" rel="noopener"><span class="rt">▶</span>Kleppmann 2.4: Fault tolerance — Martin Kleppmann</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/chaos-mesh/chaos-mesh" target="_blank" rel="noopener"><span class="rt">⌘</span>Chaos Mesh</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="78" data-s="3">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="78"><span></span></label><span class="n">78</span></td>
+            <td class="topic">Clock Skew</td>
+            <td class="used">Machines disagree about wall-clock time, which breaks cross-node ordering assumptions.</td>
+            <td class="case">Last-write-wins by timestamp silently drops a newer update; version vectors or monotonic clocks fix it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/FQ_2N3AQu0M" target="_blank" rel="noopener"><span class="rt">▶</span>Kleppmann 3.1: Physical time — Martin Kleppmann</a><span class="dur">21 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="4" style="--c:#fbbf24">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">04</div>
+            <h2>Async &amp; Messaging</h2>
+            <span class="rng">15–21</span>
+            <span class="count">7 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="15" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="15"><span></span></label><span class="n">15</span></td>
+            <td class="topic">Message Queues</td>
+            <td class="used">Point-to-point buffering: a producer enqueues, exactly one consumer processes.</td>
+            <td class="case">SQS absorbs a 10× checkout spike while workers drain at a steady, safe rate.</td>
+            <td class="res"><a class="res" href="https://youtu.be/1ISRd0bS714" target="_blank" rel="noopener"><span class="rt">▶</span>Message queues in system design — Hello Interview</a><span class="dur">27 min</span></td>
+            <td class="res"><a class="res" href="https://kafka.apache.org/quickstart" target="_blank" rel="noopener"><span class="rt">⌘</span>Kafka quickstart</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="16" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="16"><span></span></label><span class="n">16</span></td>
+            <td class="topic">Pub/Sub</td>
+            <td class="used">One published message fans out to many independent subscribers via topics.</td>
+            <td class="case">OrderPlaced → email, analytics, inventory, and fraud consumers all react independently.</td>
+            <td class="res"><a class="res" href="https://youtu.be/FMhbR_kQeHw" target="_blank" rel="noopener"><span class="rt">▶</span>Publisher/subscriber model — Gaurav Sen</a><span class="dur">11 min</span></td>
+            <td class="res"><a class="res" href="https://kafka.apache.org/quickstart" target="_blank" rel="noopener"><span class="rt">⌘</span>Kafka quickstart</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="17" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="17"><span></span></label><span class="n">17</span></td>
+            <td class="topic">Event-Driven Architecture</td>
+            <td class="used">Services communicate by emitting facts (“OrderPlaced”) instead of calling each other directly.</td>
+            <td class="case">Payments emits PaymentCaptured; fulfilment, ledger, and notifications react with no coupling.</td>
+            <td class="res"><a class="res" href="https://youtu.be/gOuAqRaDdHA" target="_blank" rel="noopener"><span class="rt">▶</span>Event-driven architecture in 7 minutes — Alex Hyett</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://kafka.apache.org/quickstart" target="_blank" rel="noopener"><span class="rt">⌘</span>Kafka quickstart</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="18" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="18"><span></span></label><span class="n">18</span></td>
+            <td class="topic">Distributed Transactions</td>
+            <td class="used">Atomicity across multiple services or databases, via 2PC or by designing it away.</td>
+            <td class="case">2PC across inventory and payments, which blocks if the coordinator dies mid-commit.</td>
+            <td class="res"><a class="res" href="https://youtu.be/aDp99WDIM_4" target="_blank" rel="noopener"><span class="rt">▶</span>MIT 6.824 L12: Distributed transactions — MIT 6.824</a><span class="dur">1h 17m</span></td>
+            <td class="res"><a class="res" href="https://microservices.io/patterns/" target="_blank" rel="noopener"><span class="rt">⌘</span>microservices.io patterns</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="19" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="19"><span></span></label><span class="n">19</span></td>
+            <td class="topic">Saga Pattern</td>
+            <td class="used">A long business transaction as local steps, each with a compensating action on failure.</td>
+            <td class="case">Book flight → hotel → car; when the car fails, release the hotel and cancel the flight.</td>
+            <td class="res"><a class="res" href="https://youtu.be/d2z78guUR4g" target="_blank" rel="noopener"><span class="rt">▶</span>Saga pattern — ByteMonk</a><span class="dur">17 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/temporalio/temporal" target="_blank" rel="noopener"><span class="rt">⌘</span>Temporal (durable workflows)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="20" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="20"><span></span></label><span class="n">20</span></td>
+            <td class="topic">Dead Letter Queues</td>
+            <td class="used">Parks messages that repeatedly fail so they stop poisoning the queue.</td>
+            <td class="case">Five failed attempts → DLQ → alert → fix the bug → replay the messages.</td>
+            <td class="res"><a class="res" href="https://youtu.be/fh380kNc12U" target="_blank" rel="noopener"><span class="rt">▶</span>Dead letter queues — Keerti Purswani</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://kafka.apache.org/quickstart" target="_blank" rel="noopener"><span class="rt">⌘</span>Kafka quickstart</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="21" data-s="4">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="21"><span></span></label><span class="n">21</span></td>
+            <td class="topic">Cron Jobs</td>
+            <td class="used">Scheduled recurring execution that needs a single owner in multi-replica deployments.</td>
+            <td class="case">Nightly billing at 02:00 UTC; leader election ensures only one replica actually runs it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/-BmTF6IvyzY" target="_blank" rel="noopener"><span class="rt">▶</span>Job scheduler: 10,000 jobs/sec — Kuluru Vineeth</a><span class="dur">42 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/kubernetes/examples" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes examples</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="5" style="--c:#34d399">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">05</div>
+            <h2>Realtime &amp; Integrations</h2>
+            <span class="rng">22–24 · 83</span>
+            <span class="count">4 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="22" data-s="5">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="22"><span></span></label><span class="n">22</span></td>
+            <td class="topic">WebSockets</td>
+            <td class="used">A persistent full-duplex connection established by upgrading an HTTP request.</td>
+            <td class="case">Collaborative document cursors and chat presence across 100k concurrent sockets.</td>
+            <td class="res"><a class="res" href="https://youtu.be/pnj3Jbho5Ck" target="_blank" rel="noopener"><span class="rt">▶</span>How WebSockets work — ByteMonk</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/gorilla/websocket" target="_blank" rel="noopener"><span class="rt">⌘</span>gorilla/websocket examples</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="23" data-s="5">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="23"><span></span></label><span class="n">23</span></td>
+            <td class="topic">Long Polling</td>
+            <td class="used">The client holds a request open until the server has data or the request times out, then reconnects.</td>
+            <td class="case">Chat fallback for browsers behind proxies that block WebSocket upgrades.</td>
+            <td class="res"><a class="res" href="https://youtu.be/ZBM28ZPlin8" target="_blank" rel="noopener"><span class="rt">▶</span>Short vs long polling vs WebSockets — Be A Better Dev</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="24" data-s="5">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="24"><span></span></label><span class="n">24</span></td>
+            <td class="topic">Server-Sent Events</td>
+            <td class="used">A one-way server-to-client stream over plain HTTP, with built-in reconnection.</td>
+            <td class="case">Live deploy logs, notification badges, and LLM token streaming without a WebSocket.</td>
+            <td class="res"><a class="res" href="https://youtu.be/WS352jTTkPU" target="_blank" rel="noopener"><span class="rt">▶</span>WebSockets vs polling vs SSE — Piyush Garg</a><span class="dur">27 min</span></td>
+            <td class="res"><a class="res" href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events" target="_blank" rel="noopener"><span class="rt">⌘</span>MDN · Server-sent events</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="83" data-s="5">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="83"><span></span></label><span class="n">83</span></td>
+            <td class="topic">Webhooks</td>
+            <td class="used">Your service POSTs an event to a customer-supplied URL; you must sign it and retry it.</td>
+            <td class="case">Stripe payment_intent.succeeded → your endpoint, HMAC-verified, retried with backoff for 3 days.</td>
+            <td class="res"><a class="res" href="https://youtu.be/oQaJn6RdA3g" target="_blank" rel="noopener"><span class="rt">▶</span>How webhooks work — ByteMonk</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="6" style="--c:#60a5fa">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">06</div>
+            <h2>Data at Scale</h2>
+            <span class="rng">25–29 · 31–32</span>
+            <span class="count">7 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="25" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="25"><span></span></label><span class="n">25</span></td>
+            <td class="topic">Database Indexing</td>
+            <td class="used">B-tree or hash structures that turn full scans into seeks, at the cost of slower writes.</td>
+            <td class="case">Composite (tenant_id, created_at) index turns an 800 ms feed query into 4 ms.</td>
+            <td class="res"><a class="res" href="https://youtu.be/scUtG_6M_lU" target="_blank" rel="noopener"><span class="rt">▶</span>CMU 15-445 #08: B+Tree indexes — CMU Database Group</a><span class="dur">1h 22m</span></td>
+            <td class="res"><a class="res" href="https://use-the-index-luke.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>Use the Index, Luke</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-830-database-systems-fall-2010/" target="_blank" rel="noopener" title="MIT 6.830 · Database Systems"><span class="code">MIT 6.830</span><span class="rest">Database Systems</span></a></td>
+          </tr><tr class="item" data-n="26" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="26"><span></span></label><span class="n">26</span></td>
+            <td class="topic">Read Replicas</td>
+            <td class="used">Copies that serve reads and absorb load away from the primary.</td>
+            <td class="case">Analytics queries run on a replica; read-your-own-writes is routed to the primary for 5 s.</td>
+            <td class="res"><a class="res" href="https://youtu.be/bI8Ry6GhMSE" target="_blank" rel="noopener"><span class="rt">▶</span>Database replication in 5 minutes — Aced</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-830-database-systems-fall-2010/" target="_blank" rel="noopener" title="MIT 6.830 · Database Systems"><span class="code">MIT 6.830</span><span class="rest">Database Systems</span></a></td>
+          </tr><tr class="item" data-n="27" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="27"><span></span></label><span class="n">27</span></td>
+            <td class="topic">Sharding</td>
+            <td class="used">Splits data across independent databases by a shard key to scale writes.</td>
+            <td class="case">Shard by user_id into 16 logical shards; reshard with consistent hashing, not modulo arithmetic.</td>
+            <td class="res"><a class="res" href="https://youtu.be/5faMjKuB9bc" target="_blank" rel="noopener"><span class="rt">▶</span>What is database sharding? — Gaurav Sen</a><span class="dur">9 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="28" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="28"><span></span></label><span class="n">28</span></td>
+            <td class="topic">Partitioning</td>
+            <td class="used">Divides one large table into chunks by range, hash, or list inside a single database.</td>
+            <td class="case">Range-partition events by month so retention is a DROP PARTITION instead of a huge DELETE.</td>
+            <td class="res"><a class="res" href="https://youtu.be/4B1KjOP-A58" target="_blank" rel="noopener"><span class="rt">▶</span>Database partitioning — Gate Smashers</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-830-database-systems-fall-2010/" target="_blank" rel="noopener" title="MIT 6.830 · Database Systems"><span class="code">MIT 6.830</span><span class="rest">Database Systems</span></a></td>
+          </tr><tr class="item" data-n="29" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="29"><span></span></label><span class="n">29</span></td>
+            <td class="topic">Replication</td>
+            <td class="used">Keeps copies of data for durability, failover, and read scaling (single or multi-leader).</td>
+            <td class="case">Postgres streaming replication to a hot standby with automated failover.</td>
+            <td class="res"><a class="res" href="https://youtu.be/mBUCF1WGI_I" target="_blank" rel="noopener"><span class="rt">▶</span>Kleppmann 5.1: Replication — Martin Kleppmann</a><span class="dur">25 min</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="31" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="31"><span></span></label><span class="n">31</span></td>
+            <td class="topic">CAP Theorem</td>
+            <td class="used">During a network partition you must choose consistency or availability, per operation.</td>
+            <td class="case">Ledger writes stay CP and reject; the social feed stays AP and serves slightly stale data.</td>
+            <td class="res"><a class="res" href="https://youtu.be/BHqjEjzAicA" target="_blank" rel="noopener"><span class="rt">▶</span>CAP theorem simplified — ByteByteGo</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="32" data-s="6">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="32"><span></span></label><span class="n">32</span></td>
+            <td class="topic">Eventual Consistency</td>
+            <td class="used">Replicas converge once writes stop; reads in the meantime may be stale.</td>
+            <td class="case">Like counters and view counts converge in seconds; account balances must never rely on it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/9uCP3qHNbWw" target="_blank" rel="noopener"><span class="rt">▶</span>Kleppmann 7.3: Eventual consistency — Martin Kleppmann</a><span class="dur">15 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="7" style="--c:#f472b6">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">07</div>
+            <h2>Concurrency &amp; Coordination</h2>
+            <span class="rng">30 · 33–37</span>
+            <span class="count">6 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="30" data-s="7">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="30"><span></span></label><span class="n">30</span></td>
+            <td class="topic">Leader Election</td>
+            <td class="used">Exactly one node acts as coordinator, usually via leases, Raft, or a lock service.</td>
+            <td class="case">etcd/Raft elects the scheduler; the deposed leader’s writes are rejected by a fencing token.</td>
+            <td class="res"><a class="res" href="https://youtu.be/rN6ma561tak" target="_blank" rel="noopener"><span class="rt">▶</span>Kleppmann 6.1: Consensus — Martin Kleppmann</a><span class="dur">18 min</span></td>
+            <td class="res"><a class="res" href="https://etcd.io/docs/" target="_blank" rel="noopener"><span class="rt">⌘</span>etcd docs</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="33" data-s="7">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="33"><span></span></label><span class="n">33</span></td>
+            <td class="topic">Optimistic Locking</td>
+            <td class="used">Version-checked writes with no held locks; conflicts are detected and retried.</td>
+            <td class="case">UPDATE … WHERE version = 7; zero rows affected means re-read and retry.</td>
+            <td class="res"><a class="res" href="https://youtu.be/-TA0QIwFUnU" target="_blank" rel="noopener"><span class="rt">▶</span>CMU 15-445 #18: Optimistic concurrency control — CMU Database Group</a><span class="dur">1h 21m</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-830-database-systems-fall-2010/" target="_blank" rel="noopener" title="MIT 6.830 · Database Systems"><span class="code">MIT 6.830</span><span class="rest">Database Systems</span></a></td>
+          </tr><tr class="item" data-n="34" data-s="7">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="34"><span></span></label><span class="n">34</span></td>
+            <td class="topic">Pessimistic Locking</td>
+            <td class="used">Holds row or table locks for the transaction’s duration to prevent concurrent modification.</td>
+            <td class="case">SELECT … FOR UPDATE on the inventory row while checkout decrements stock.</td>
+            <td class="res"><a class="res" href="https://youtu.be/bXpkEt5P_Js" target="_blank" rel="noopener"><span class="rt">▶</span>CMU 15-445 #17: Two-phase locking — CMU Database Group</a><span class="dur">1h 5m</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-830-database-systems-fall-2010/" target="_blank" rel="noopener" title="MIT 6.830 · Database Systems"><span class="code">MIT 6.830</span><span class="rest">Database Systems</span></a></td>
+          </tr><tr class="item" data-n="35" data-s="7">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="35"><span></span></label><span class="n">35</span></td>
+            <td class="topic">Distributed Locks</td>
+            <td class="used">Mutual exclusion across processes via Redis, ZooKeeper, or a database row — always with fencing.</td>
+            <td class="case">Only one instance runs the nightly job; a 60 s TTL lease is renewed while it works.</td>
+            <td class="res"><a class="res" href="https://youtu.be/qY4MfWv01pI" target="_blank" rel="noopener"><span class="rt">▶</span>How distributed locks work (Redis) — ByteMonk</a><span class="dur">10 min</span></td>
+            <td class="res"><a class="res" href="https://redis.io/learn" target="_blank" rel="noopener"><span class="rt">⌘</span>Redis Learn</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006" target="_blank" rel="noopener" title="MIT 6.824 · Distributed Systems (OCW)"><span class="code">MIT 6.824</span><span class="rest">Distributed Systems (OCW)</span></a></td>
+          </tr><tr class="item" data-n="36" data-s="7">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="36"><span></span></label><span class="n">36</span></td>
+            <td class="topic">Race Conditions</td>
+            <td class="used">Outcomes that depend on timing and interleaving, typically check-then-act or read-modify-write.</td>
+            <td class="case">Two requests both read stock=1 and both sell it; a conditional UPDATE fixes it atomically.</td>
+            <td class="res"><a class="res" href="https://youtu.be/MqnpIwN7dz0" target="_blank" rel="noopener"><span class="rt">▶</span>Race conditions and how to prevent them — Spanning Tree</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="37" data-s="7">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="37"><span></span></label><span class="n">37</span></td>
+            <td class="topic">Deadlocks</td>
+            <td class="used">Cyclic lock waits where each transaction holds what the other needs.</td>
+            <td class="case">Two transfers locking accounts in opposite order; enforce a consistent lock order and retry.</td>
+            <td class="res"><a class="res" href="https://youtu.be/9Zw3ay3_tCQ" target="_blank" rel="noopener"><span class="rt">▶</span>Database deadlocks explained — Software Developer Diaries</a><span class="dur">13 min</span></td>
+            <td class="res"><a class="res" href="https://pgexercises.com/" target="_blank" rel="noopener"><span class="rt">⌘</span>PG Exercises</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-830-database-systems-fall-2010/" target="_blank" rel="noopener" title="MIT 6.830 · Database Systems"><span class="code">MIT 6.830</span><span class="rest">Database Systems</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="8" style="--c:#2dd4bf">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">08</div>
+            <h2>Runtime &amp; Resources</h2>
+            <span class="rng">38–44</span>
+            <span class="count">7 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="38" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="38"><span></span></label><span class="n">38</span></td>
+            <td class="topic">Memory Leaks</td>
+            <td class="used">Retained references that are never released: listeners, caches, closures, globals.</td>
+            <td class="case">Heap grows 50 MB/hour; a heap snapshot shows a Map keyed by request ID that is never cleared.</td>
+            <td class="res"><a class="res" href="https://youtu.be/eu_kTGv61WQ" target="_blank" rel="noopener"><span class="rt">▶</span>What is a memory leak? — codebasics</a><span class="dur">3 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/wagoodman/dive" target="_blank" rel="noopener"><span class="rt">⌘</span>dive (image analysis)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-172-performance-engineering-of-software-systems-fall-2018/" target="_blank" rel="noopener" title="MIT 6.172 · Performance Engineering"><span class="code">MIT 6.172</span><span class="rest">Performance Engineering</span></a></td>
+          </tr><tr class="item" data-n="39" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="39"><span></span></label><span class="n">39</span></td>
+            <td class="topic">Garbage Collection</td>
+            <td class="used">Automatic reclamation of unreachable memory; pauses directly hurt tail latency.</td>
+            <td class="case">Tuning GOGC, or using ZGC on a 64 GB Java heap to keep pauses under a millisecond.</td>
+            <td class="res"><a class="res" href="https://youtu.be/3Kqal7QaCCM" target="_blank" rel="noopener"><span class="rt">▶</span>Garbage collection in Java, Python and Go — ByteByteGo</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://12factor.net/" target="_blank" rel="noopener"><span class="rt">⌘</span>The Twelve-Factor App</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-172-performance-engineering-of-software-systems-fall-2018/" target="_blank" rel="noopener" title="MIT 6.172 · Performance Engineering"><span class="code">MIT 6.172</span><span class="rest">Performance Engineering</span></a></td>
+          </tr><tr class="item" data-n="40" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="40"><span></span></label><span class="n">40</span></td>
+            <td class="topic">Thread Safety</td>
+            <td class="used">Correct behaviour when multiple threads touch shared mutable state.</td>
+            <td class="case">Immutable config and message passing instead of a shared HashMap guarded by ad-hoc locks.</td>
+            <td class="res"><a class="res" href="https://youtu.be/px4W-HXRWKk" target="_blank" rel="noopener"><span class="rt">▶</span>Thread safety — Telusko</a><span class="dur">9 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/MichaelCade/90DaysOfDevOps" target="_blank" rel="noopener"><span class="rt">⌘</span>90 Days of DevOps</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-172-performance-engineering-of-software-systems-fall-2018/" target="_blank" rel="noopener" title="MIT 6.172 · Performance Engineering"><span class="code">MIT 6.172</span><span class="rest">Performance Engineering</span></a></td>
+          </tr><tr class="item" data-n="41" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="41"><span></span></label><span class="n">41</span></td>
+            <td class="topic">Backpressure</td>
+            <td class="used">Tells upstream to slow down when you are saturated: bounded queues, 429s, TCP flow control.</td>
+            <td class="case">A bounded queue rejects at 10k items; the producer receives 429 and backs off instead of OOM-ing.</td>
+            <td class="res"><a class="res" href="https://youtu.be/3DTSIlj72Qs" target="_blank" rel="noopener"><span class="rt">▶</span>Backpressure simply explained — Software Developer Diaries</a><span class="dur">9 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/Shopify/toxiproxy" target="_blank" rel="noopener"><span class="rt">⌘</span>Toxiproxy (fault injection)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="42" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="42"><span></span></label><span class="n">42</span></td>
+            <td class="topic">Autoscaling</td>
+            <td class="used">Adds and removes capacity based on a signal that predicts load.</td>
+            <td class="case">HPA on RPS and queue depth rather than CPU, which lags for I/O-bound services.</td>
+            <td class="res"><a class="res" href="https://youtu.be/afUL5jGoLx0" target="_blank" rel="noopener"><span class="rt">▶</span>Kubernetes autoscaling: HPA vs VPA — Tech Tutorials with Piyush</a><span class="dur">26 min</span></td>
+            <td class="res"><a class="res" href="https://kubernetes.io/docs/tutorials/" target="_blank" rel="noopener"><span class="rt">⌘</span>Kubernetes tutorials</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="43" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="43"><span></span></label><span class="n">43</span></td>
+            <td class="topic">Horizontal Scaling</td>
+            <td class="used">Adds more instances; requires statelessness or externalized state.</td>
+            <td class="case">Going from 3 to 30 stateless API pods behind a load balancer during a launch.</td>
+            <td class="res"><a class="res" href="https://youtu.be/xpDnVSmNFX0" target="_blank" rel="noopener"><span class="rt">▶</span>Horizontal vs vertical scaling — Gaurav Sen</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="44" data-s="8">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="44"><span></span></label><span class="n">44</span></td>
+            <td class="topic">Vertical Scaling</td>
+            <td class="used">Moves to a bigger machine: simplest option, hard ceiling, single point of failure.</td>
+            <td class="case">Bumping Postgres from 16 to 64 vCPU as the pragmatic step before committing to sharding.</td>
+            <td class="res"><a class="res" href="https://youtu.be/rwTTymOAHTU" target="_blank" rel="noopener"><span class="rt">▶</span>Horizontal vs vertical scaling — Gate Smashers</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="9" style="--c:#c084fc">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">09</div>
+            <h2>Caching &amp; Edge Delivery</h2>
+            <span class="rng">45–47</span>
+            <span class="count">3 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="45" data-s="9">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="45"><span></span></label><span class="n">45</span></td>
+            <td class="topic">CDN</td>
+            <td class="used">A geographically distributed cache and proxy sitting in front of your origin.</td>
+            <td class="case">CloudFront serving images and video at a 95% hit ratio, cutting origin egress by 90%.</td>
+            <td class="res"><a class="res" href="https://youtu.be/b4_6thkYZXs" target="_blank" rel="noopener"><span class="rt">▶</span>What is a CDN? — Gaurav Sen</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://www.cloudflare.com/learning/" target="_blank" rel="noopener"><span class="rt">⌘</span>Cloudflare Learning Center</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="46" data-s="9">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="46"><span></span></label><span class="n">46</span></td>
+            <td class="topic">Edge Caching</td>
+            <td class="used">Caches responses at the POP nearest the user, before the request crosses an ocean.</td>
+            <td class="case">Anonymous product JSON cached for 60 s at the edge, bypassed entirely for logged-in users.</td>
+            <td class="res"><a class="res" href="https://youtu.be/TGsqX6rtjkk" target="_blank" rel="noopener"><span class="rt">▶</span>Edge caching, CDN and Redis — programmerCave</a><span class="dur">9 min</span></td>
+            <td class="res"><a class="res" href="https://www.cloudflare.com/learning/" target="_blank" rel="noopener"><span class="rt">⌘</span>Cloudflare Learning Center</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="47" data-s="9">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="47"><span></span></label><span class="n">47</span></td>
+            <td class="topic">Cache Invalidation</td>
+            <td class="used">Removes or supersedes stale entries via TTL, write-through, event purge, or versioned keys.</td>
+            <td class="case">A product update publishes an event that purges the CDN cache tag for that product only.</td>
+            <td class="res"><a class="res" href="https://youtu.be/6IHE4d-l7Y0" target="_blank" rel="noopener"><span class="rt">▶</span>Cache eviction and invalidation — Tech With Aman</a><span class="dur">18 min</span></td>
+            <td class="res"><a class="res" href="https://redis.io/learn" target="_blank" rel="noopener"><span class="rt">⌘</span>Redis Learn</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="10" style="--c:#4ade80">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">10</div>
+            <h2>Observability &amp; SLOs</h2>
+            <span class="rng">55–63 · 73–76</span>
+            <span class="count">13 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="55" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="55"><span></span></label><span class="n">55</span></td>
+            <td class="topic">Monitoring</td>
+            <td class="used">Watching known signals for known failure modes: is it up, how fast, how full.</td>
+            <td class="case">A dashboard per service with RPS, error rate, saturation, and p99 broken down by route.</td>
+            <td class="res"><a class="res" href="https://youtu.be/ddZjhv66o_o" target="_blank" rel="noopener"><span class="rt">▶</span>Monitoring with Prometheus, Grafana, Loki — Piyush Garg</a><span class="dur">52 min</span></td>
+            <td class="res"><a class="res" href="https://prometheus.io/docs/tutorials/getting_started/" target="_blank" rel="noopener"><span class="rt">⌘</span>Prometheus tutorial</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="56" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="56"><span></span></label><span class="n">56</span></td>
+            <td class="topic">Logging</td>
+            <td class="used">Structured, timestamped event records carrying correlation and trace IDs.</td>
+            <td class="case">JSON logs with trace_id; 7 days hot retention, 1 year in cold storage for audits.</td>
+            <td class="res"><a class="res" href="https://youtu.be/I2mWnh66Bkg" target="_blank" rel="noopener"><span class="rt">▶</span>12 logging best practices — Better Stack</a><span class="dur">12 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/grafana/grafana" target="_blank" rel="noopener"><span class="rt">⌘</span>Grafana</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="57" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="57"><span></span></label><span class="n">57</span></td>
+            <td class="topic">Distributed Tracing</td>
+            <td class="used">Follows one request across services as a trace with timed spans and context propagation.</td>
+            <td class="case">OTel Collector + Jaeger reveals which of 12 hops added the 800 ms.</td>
+            <td class="res"><a class="res" href="https://youtu.be/XYvQHjWJJTE" target="_blank" rel="noopener"><span class="rt">▶</span>Distributed tracing in microservices — ByteMonk</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/open-telemetry/opentelemetry-demo" target="_blank" rel="noopener"><span class="rt">⌘</span>OpenTelemetry demo app</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="58" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="58"><span></span></label><span class="n">58</span></td>
+            <td class="topic">Metrics</td>
+            <td class="used">Cheap numeric time series: counters, gauges, and histograms.</td>
+            <td class="case">Prometheus histograms for latency percentiles — never averages, which hide the tail.</td>
+            <td class="res"><a class="res" href="https://youtu.be/p_q-n09B8KA" target="_blank" rel="noopener"><span class="rt">▶</span>Distributed logging and metrics — Jordan has no life</a><span class="dur">28 min</span></td>
+            <td class="res"><a class="res" href="https://prometheus.io/docs/tutorials/getting_started/" target="_blank" rel="noopener"><span class="rt">⌘</span>Prometheus tutorial</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="59" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="59"><span></span></label><span class="n">59</span></td>
+            <td class="topic">Alerts</td>
+            <td class="used">Actionable, symptom-based notifications that page a human with a runbook attached.</td>
+            <td class="case">Page when 5xx exceeds 2% for 5 minutes; open a ticket when disk passes 80%.</td>
+            <td class="res"><a class="res" href="https://youtu.be/e_kMaLSL0r4" target="_blank" rel="noopener"><span class="rt">▶</span>SRE alerting practice — Lu W</a><span class="dur">17 min</span></td>
+            <td class="res"><a class="res" href="https://sre.google/workbook/" target="_blank" rel="noopener"><span class="rt">⌘</span>Google SRE Workbook</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="60" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="60"><span></span></label><span class="n">60</span></td>
+            <td class="topic">SLOs</td>
+            <td class="used">An internal reliability target measured over a rolling window.</td>
+            <td class="case">99.9% of checkout requests complete under 300 ms over 28 days.</td>
+            <td class="res"><a class="res" href="https://youtu.be/Akri1BlGp10" target="_blank" rel="noopener"><span class="rt">▶</span>SLO vs SLI vs SLA vs error budget — Tech Tutorials with Piyush</a><span class="dur">19 min</span></td>
+            <td class="res"><a class="res" href="https://sre.google/workbook/" target="_blank" rel="noopener"><span class="rt">⌘</span>Google SRE Workbook</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="61" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="61"><span></span></label><span class="n">61</span></td>
+            <td class="topic">SLIs</td>
+            <td class="used">The measured indicator behind an SLO: success rate, latency percentile, freshness.</td>
+            <td class="case">Measured at the load balancer, not inside the service, so it reflects what users actually get.</td>
+            <td class="res"><a class="res" href="https://youtu.be/PVjpvKgEGVc" target="_blank" rel="noopener"><span class="rt">▶</span>Service level indicators explained — The Night Shift SRE</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://sre.google/workbook/" target="_blank" rel="noopener"><span class="rt">⌘</span>Google SRE Workbook</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="62" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="62"><span></span></label><span class="n">62</span></td>
+            <td class="topic">Error Budgets</td>
+            <td class="used">The allowed failure implied by 1 − SLO, spent deliberately on releases and risk.</td>
+            <td class="case">Budget exhausted → feature freeze and reliability work until the burn rate recovers.</td>
+            <td class="res"><a class="res" href="https://youtu.be/vK88U8BOdE8" target="_blank" rel="noopener"><span class="rt">▶</span>SLIs, SLOs and error budgets — Let's Crack IT</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://sre.google/workbook/" target="_blank" rel="noopener"><span class="rt">⌘</span>Google SRE Workbook</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="63" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="63"><span></span></label><span class="n">63</span></td>
+            <td class="topic">Observability</td>
+            <td class="used">The ability to answer new questions about production without shipping new code.</td>
+            <td class="case">Joining metrics, logs, and traces by trace_id to explain an unexplained p99 spike.</td>
+            <td class="res"><a class="res" href="https://youtu.be/ytx6jr2TyxI" target="_blank" rel="noopener"><span class="rt">▶</span>Observability vs monitoring — Better Stack</a><span class="dur">4 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/open-telemetry/opentelemetry-demo" target="_blank" rel="noopener"><span class="rt">⌘</span>OpenTelemetry demo app</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="73" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="73"><span></span></label><span class="n">73</span></td>
+            <td class="topic">Latency</td>
+            <td class="used">The time to complete a single operation, as experienced by the caller.</td>
+            <td class="case">p50 is 40 ms but p99 is 900 ms — the tail, not the average, defines the UX.</td>
+            <td class="res"><a class="res" href="https://youtu.be/cDVNU2j26Bs" target="_blank" rel="noopener"><span class="rt">▶</span>Bandwidth vs throughput vs latency — Gate Smashers</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="74" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="74"><span></span></label><span class="n">74</span></td>
+            <td class="topic">Throughput</td>
+            <td class="used">Operations completed per unit time; often traded against latency via batching.</td>
+            <td class="case">Batching 100 inserts raises throughput 10× while adding 20 ms of latency per record.</td>
+            <td class="res"><a class="res" href="https://youtu.be/xINovPUiFus" target="_blank" rel="noopener"><span class="rt">▶</span>Throughput in performance testing — Perfology</a><span class="dur">4 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="75" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="75"><span></span></label><span class="n">75</span></td>
+            <td class="topic">P99 Latency</td>
+            <td class="used">The latency value that 99% of requests beat.</td>
+            <td class="case">Alert on p99, not the mean: one slow dependency moves p99 while the average looks healthy.</td>
+            <td class="res"><a class="res" href="https://youtu.be/lJ4NEMNBeS4" target="_blank" rel="noopener"><span class="rt">▶</span>p90, p95, p99 latency — ByteMonk</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="76" data-s="10">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="76"><span></span></label><span class="n">76</span></td>
+            <td class="topic">Tail Latency</td>
+            <td class="used">The slowest 1% or 0.1% of requests, amplified by fan-out.</td>
+            <td class="case">With 100 parallel backend calls, one service’s p99 becomes roughly the page’s p63.</td>
+            <td class="res"><a class="res" href="https://youtu.be/3JdQOExKtUY" target="_blank" rel="noopener"><span class="rt">▶</span>Percentile tail latency — Hussein Nasser</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener"><span class="rt">⌘</span>System Design Primer</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="11" style="--c:#f97316">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">11</div>
+            <h2>Security &amp; Identity</h2>
+            <span class="rng">64–72</span>
+            <span class="count">9 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="64" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="64"><span></span></label><span class="n">64</span></td>
+            <td class="topic">Secrets Management</td>
+            <td class="used">Keeps credentials out of code and config, with rotation, scoping, and audit.</td>
+            <td class="case">Vault issues short-lived database credentials so no static password exists to steal.</td>
+            <td class="res"><a class="res" href="https://youtu.be/BqekRTA6VCs" target="_blank" rel="noopener"><span class="rt">▶</span>Secrets management — IBM Technology</a><span class="dur">10 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/trimstray/the-book-of-secret-knowledge" target="_blank" rel="noopener"><span class="rt">⌘</span>Book of Secret Knowledge</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-858-computer-systems-security-fall-2014/" target="_blank" rel="noopener" title="MIT 6.858 · Computer Systems Security"><span class="code">MIT 6.858</span><span class="rest">Computer Systems Security</span></a></td>
+          </tr><tr class="item" data-n="65" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="65"><span></span></label><span class="n">65</span></td>
+            <td class="topic">IAM</td>
+            <td class="used">Defines who can perform which action on which resource, under least privilege.</td>
+            <td class="case">An S3 policy scoped to one bucket prefix and one role, with no wildcard actions.</td>
+            <td class="res"><a class="res" href="https://youtu.be/_ZCTvmaPgao" target="_blank" rel="noopener"><span class="rt">▶</span>AWS IAM core concepts — Be A Better Dev</a><span class="dur">22 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/trimstray/the-book-of-secret-knowledge" target="_blank" rel="noopener"><span class="rt">⌘</span>Book of Secret Knowledge</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-858-computer-systems-security-fall-2014/" target="_blank" rel="noopener" title="MIT 6.858 · Computer Systems Security"><span class="code">MIT 6.858</span><span class="rest">Computer Systems Security</span></a></td>
+          </tr><tr class="item" data-n="66" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="66"><span></span></label><span class="n">66</span></td>
+            <td class="topic">OAuth</td>
+            <td class="used">A delegated authorization framework: authorization code + PKCE for users, client credentials for services.</td>
+            <td class="case">“Sign in with Google” via OIDC; machine-to-machine tokens via the client-credentials grant.</td>
+            <td class="res"><a class="res" href="https://youtu.be/ZV5yTm4pT8g" target="_blank" rel="noopener"><span class="rt">▶</span>OAuth 2 explained — ByteByteGo</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://oauth.net/2/" target="_blank" rel="noopener"><span class="rt">⌘</span>oauth.net</a></td>
+            <td class="course"><a href="https://cs155.stanford.edu/" target="_blank" rel="noopener" title="Stanford CS155 · Computer Security"><span class="code">Stanford CS155</span><span class="rest">Computer Security</span></a></td>
+          </tr><tr class="item" data-n="67" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="67"><span></span></label><span class="n">67</span></td>
+            <td class="topic">JWT Rotation</td>
+            <td class="used">Expires and replaces signing keys while old keys still verify, selected by `kid`.</td>
+            <td class="case">Rotate RS256 keys every 90 days; the previous key verifies for 24 h so sessions survive.</td>
+            <td class="res"><a class="res" href="https://youtu.be/RHLR6kK7WxE" target="_blank" rel="noopener"><span class="rt">▶</span>JWT explained — Gate Smashers</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://jwt.io/" target="_blank" rel="noopener"><span class="rt">⌘</span>jwt.io debugger</a></td>
+            <td class="course"><a href="https://cs155.stanford.edu/" target="_blank" rel="noopener" title="Stanford CS155 · Computer Security"><span class="code">Stanford CS155</span><span class="rest">Computer Security</span></a></td>
+          </tr><tr class="item" data-n="68" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="68"><span></span></label><span class="n">68</span></td>
+            <td class="topic">TLS</td>
+            <td class="used">Encrypts and authenticates transport, with forward secrecy via ephemeral key exchange.</td>
+            <td class="case">TLS 1.3 at the edge and mTLS between services for workload identity.</td>
+            <td class="res"><a class="res" href="https://youtu.be/j9QmMEWmcfo" target="_blank" rel="noopener"><span class="rt">▶</span>SSL, TLS and HTTPS explained — ByteByteGo</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://www.cloudflare.com/learning/" target="_blank" rel="noopener"><span class="rt">⌘</span>Cloudflare Learning Center</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-858-computer-systems-security-fall-2014/" target="_blank" rel="noopener" title="MIT 6.858 · Computer Systems Security"><span class="code">MIT 6.858</span><span class="rest">Computer Systems Security</span></a></td>
+          </tr><tr class="item" data-n="69" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="69"><span></span></label><span class="n">69</span></td>
+            <td class="topic">Encryption at Rest</td>
+            <td class="used">Encrypts data on disk and in backups under managed keys.</td>
+            <td class="case">RDS storage and snapshot encryption with per-tenant KMS keys and rotation enabled.</td>
+            <td class="res"><a class="res" href="https://youtu.be/5wIHu27Rr7Y" target="_blank" rel="noopener"><span class="rt">▶</span>Encryption at rest vs in transit — Advanced Tech Tutor</a><span class="dur">4 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/trimstray/the-book-of-secret-knowledge" target="_blank" rel="noopener"><span class="rt">⌘</span>Book of Secret Knowledge</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-858-computer-systems-security-fall-2014/" target="_blank" rel="noopener" title="MIT 6.858 · Computer Systems Security"><span class="code">MIT 6.858</span><span class="rest">Computer Systems Security</span></a></td>
+          </tr><tr class="item" data-n="70" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="70"><span></span></label><span class="n">70</span></td>
+            <td class="topic">Encryption in Transit</td>
+            <td class="used">Protects data on every network hop, including internal ones.</td>
+            <td class="case">TLS-only ingress, plus re-encryption for service-to-service traffic inside the VPC.</td>
+            <td class="res"><a class="res" href="https://youtu.be/h06W5B0oZVw" target="_blank" rel="noopener"><span class="rt">▶</span>Encryption in transit and end-to-end — LMG Security</a><span class="dur">4 min</span></td>
+            <td class="res"><a class="res" href="https://www.cloudflare.com/learning/" target="_blank" rel="noopener"><span class="rt">⌘</span>Cloudflare Learning Center</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-858-computer-systems-security-fall-2014/" target="_blank" rel="noopener" title="MIT 6.858 · Computer Systems Security"><span class="code">MIT 6.858</span><span class="rest">Computer Systems Security</span></a></td>
+          </tr><tr class="item" data-n="71" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="71"><span></span></label><span class="n">71</span></td>
+            <td class="topic">WAF</td>
+            <td class="used">A layer-7 filter for known attack signatures, bad bots, and abusive patterns.</td>
+            <td class="case">Blocking SQLi payloads, rate-limiting credential stuffing, and challenging scrapers.</td>
+            <td class="res"><a class="res" href="https://youtu.be/-Q4fpgEUqfs" target="_blank" rel="noopener"><span class="rt">▶</span>Web application firewall — Mehul Mohan</a><span class="dur">11 min</span></td>
+            <td class="res"><a class="res" href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener"><span class="rt">⌘</span>OWASP Top 10</a></td>
+            <td class="course"><a href="https://cs155.stanford.edu/" target="_blank" rel="noopener" title="Stanford CS155 · Computer Security"><span class="code">Stanford CS155</span><span class="rest">Computer Security</span></a></td>
+          </tr><tr class="item" data-n="72" data-s="11">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="72"><span></span></label><span class="n">72</span></td>
+            <td class="topic">DDoS Protection</td>
+            <td class="used">Absorbs or filters volumetric and application-layer floods at the edge.</td>
+            <td class="case">Anycast scrubbing plus per-IP rate limits surviving a 400 Gbps flood without paging anyone.</td>
+            <td class="res"><a class="res" href="https://youtu.be/WO4M_A_mtBI" target="_blank" rel="noopener"><span class="rt">▶</span>DDoS attack explained — WsCube</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://www.cloudflare.com/learning/" target="_blank" rel="noopener"><span class="rt">⌘</span>Cloudflare Learning Center</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="12" style="--c:#22d3ee">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">12</div>
+            <h2>Networking &amp; APIs</h2>
+            <span class="rng">79–82 · 84–85</span>
+            <span class="count">6 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="79" data-s="12">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="79"><span></span></label><span class="n">79</span></td>
+            <td class="topic">DNS</td>
+            <td class="used">Hierarchical name-to-IP resolution with TTL-based caching at every layer.</td>
+            <td class="case">30 s TTLs for fast failover; GeoDNS steering users to the nearest healthy region.</td>
+            <td class="res"><a class="res" href="https://youtu.be/mpQZVYPuDGU" target="_blank" rel="noopener"><span class="rt">▶</span>How a DNS server works — PowerCert</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://www.cloudflare.com/learning/" target="_blank" rel="noopener"><span class="rt">⌘</span>Cloudflare Learning Center</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="80" data-s="12">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="80"><span></span></label><span class="n">80</span></td>
+            <td class="topic">TCP vs UDP</td>
+            <td class="used">Reliability and ordering versus fire-and-forget datagrams.</td>
+            <td class="case">TCP for HTTP, database, and file transfer; UDP for game state, DNS, and QUIC.</td>
+            <td class="res"><a class="res" href="https://youtu.be/VevKt0qlY3I" target="_blank" rel="noopener"><span class="rt">▶</span>TCP vs UDP in 15 minutes — Harshita Verma</a><span class="dur">15 min</span></td>
+            <td class="res"><a class="res" href="https://httpwg.org/specs/" target="_blank" rel="noopener"><span class="rt">⌘</span>HTTP specs (httpwg)</a></td>
+            <td class="course"><a href="https://cs144.github.io/" target="_blank" rel="noopener" title="Stanford CS144 · Computer Networking"><span class="code">Stanford CS144</span><span class="rest">Computer Networking</span></a></td>
+          </tr><tr class="item" data-n="81" data-s="12">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="81"><span></span></label><span class="n">81</span></td>
+            <td class="topic">HTTP/2 &amp; HTTP/3</td>
+            <td class="used">Multiplexed streams over one connection; H2 on TCP, H3 on QUIC/UDP.</td>
+            <td class="case">H3 on lossy mobile networks removes head-of-line stalls and one handshake round trip.</td>
+            <td class="res"><a class="res" href="https://youtu.be/UMwQjFzTQXw" target="_blank" rel="noopener"><span class="rt">▶</span>HTTP/1 vs HTTP/2 vs HTTP/3 — ByteByteGo</a><span class="dur">8 min</span></td>
+            <td class="res"><a class="res" href="https://web.dev/" target="_blank" rel="noopener"><span class="rt">⌘</span>web.dev</a></td>
+            <td class="course"><a href="https://cs144.github.io/" target="_blank" rel="noopener" title="Stanford CS144 · Computer Networking"><span class="code">Stanford CS144</span><span class="rest">Computer Networking</span></a></td>
+          </tr><tr class="item" data-n="82" data-s="12">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="82"><span></span></label><span class="n">82</span></td>
+            <td class="topic">gRPC</td>
+            <td class="used">Typed RPC over HTTP/2 with Protobuf, code generation, deadlines, and streaming.</td>
+            <td class="case">Internal service calls with 2 s deadlines and server streaming; payloads ~3× smaller than JSON.</td>
+            <td class="res"><a class="res" href="https://youtu.be/gnchfOojMk4" target="_blank" rel="noopener"><span class="rt">▶</span>What is gRPC? — ByteByteGo</a><span class="dur">6 min</span></td>
+            <td class="res"><a class="res" href="https://grpc.io/docs/languages/" target="_blank" rel="noopener"><span class="rt">⌘</span>gRPC by language</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/" target="_blank" rel="noopener" title="MIT 6.829 · Computer Networks"><span class="code">MIT 6.829</span><span class="rest">Computer Networks</span></a></td>
+          </tr><tr class="item" data-n="84" data-s="12">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="84"><span></span></label><span class="n">84</span></td>
+            <td class="topic">API Versioning</td>
+            <td class="used">Evolves a public contract without breaking existing clients.</td>
+            <td class="case">Additive fields ship freely; breaking changes become /v2 with a 12-month sunset window.</td>
+            <td class="res"><a class="res" href="https://youtu.be/vsb4ZkUytrU" target="_blank" rel="noopener"><span class="rt">▶</span>API versioning strategies — Erik Wilde</a><span class="dur">4 min</span></td>
+            <td class="res"><a class="res" href="https://httpwg.org/specs/" target="_blank" rel="noopener"><span class="rt">⌘</span>HTTP specs (httpwg)</a></td>
+            <td class="course"><a href="https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/" target="_blank" rel="noopener" title="MIT 6.033 · Computer System Engineering"><span class="code">MIT 6.033</span><span class="rest">Computer System Engineering</span></a></td>
+          </tr><tr class="item" data-n="85" data-s="12">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="85"><span></span></label><span class="n">85</span></td>
+            <td class="topic">Semantic Versioning</td>
+            <td class="used">MAJOR.MINOR.PATCH, where a major bump signals a breaking change.</td>
+            <td class="case">1.4.2 → 2.0.0 when a required parameter is removed; only meaningful if you honour it.</td>
+            <td class="res"><a class="res" href="https://youtu.be/97i9pOa2EyE" target="_blank" rel="noopener"><span class="rt">▶</span>What is semantic versioning? — Syntax</a><span class="dur">5 min</span></td>
+            <td class="res"><a class="res" href="https://httpwg.org/specs/" target="_blank" rel="noopener"><span class="rt">⌘</span>HTTP specs (httpwg)</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr>
+      </tbody><tbody class="sec" data-s="13" style="--c:#94a3b8">
+        <tr class="sechead"><td colspan="7">
+          <div class="inner">
+            <div class="badge">13</div>
+            <h2>Operations &amp; Culture</h2>
+            <span class="rng">91–93</span>
+            <span class="count">3 topics</span>
+          </div>
+        </td></tr>
+        <tr class="item" data-n="91" data-s="13">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="91"><span></span></label><span class="n">91</span></td>
+            <td class="topic">Production Incidents</td>
+            <td class="used">An unplanned user-facing degradation, managed with explicit roles and comms cadence.</td>
+            <td class="case">Sev-1 checkout outage: incident commander, comms lead, updates every 30 minutes, mitigate first.</td>
+            <td class="res"><a class="res" href="https://youtu.be/NUmOZ3nnS7I" target="_blank" rel="noopener"><span class="rt">▶</span>Incident management (Google SRE) — Tech Tutorials with Piyush</a><span class="dur">19 min</span></td>
+            <td class="res"><a class="res" href="https://sre.google/workbook/" target="_blank" rel="noopener"><span class="rt">⌘</span>Google SRE Workbook</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="92" data-s="13">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="92"><span></span></label><span class="n">92</span></td>
+            <td class="topic">On-Call</td>
+            <td class="used">A rotation that owns production alerts and their response times.</td>
+            <td class="case">Primary/secondary rotation, 5-minute ack SLA, a runbook linked from every alert.</td>
+            <td class="res"><a class="res" href="https://youtu.be/EQOi8d6e_S0" target="_blank" rel="noopener"><span class="rt">▶</span>Improving on-call and incident response — Random Thoughts Tech</a><span class="dur">7 min</span></td>
+            <td class="res"><a class="res" href="https://github.com/dastergon/awesome-sre" target="_blank" rel="noopener"><span class="rt">⌘</span>awesome-sre</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr><tr class="item" data-n="93" data-s="13">
+            <td class="num"><label class="chk"><input type="checkbox" data-n="93"><span></span></label><span class="n">93</span></td>
+            <td class="topic">Postmortems</td>
+            <td class="used">Blameless written analysis with contributing factors and owned, dated action items.</td>
+            <td class="case">Timeline, contributing factors, and five action items each with an owner and a 14-day deadline.</td>
+            <td class="res"><a class="res" href="https://youtu.be/AoWWZxrjPb8" target="_blank" rel="noopener"><span class="rt">▶</span>Postmortems: from chores to masterclasses — Paul Osman</a><span class="dur">25 min</span></td>
+            <td class="res"><a class="res" href="https://sre.google/workbook/" target="_blank" rel="noopener"><span class="rt">⌘</span>Google SRE Workbook</a></td>
+            <td class="course"><span class="none">—</span></td>
+          </tr>
+      </tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">no concepts match that filter</div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="path">
+      <h3>If you only do six things</h3>
+      <ol>
+        <li><b>Foundations</b> — Latency, throughput, percentiles, timeouts, retries, idempotency, caching. These explain most real production bugs. <span class="none">(73–76 · 11–14 · 2 · 47)</span></li><li><b>Make one service survive</b> — Circuit breakers, backpressure, metrics, logs, traces, health probes. <span class="none">(10 · 41 · 55–58 · 53–54)</span></li><li><b>Ship it</b> — Containers, pipelines, deploy strategies, feature flags. <span class="none">(7 · 6 · 49–52 · 48)</span></li><li><b>Scale the data</b> — Indexes first, then replicas, then partitioning, only then sharding. <span class="none">(25 → 26 → 28 → 27)</span></li><li><b>Go distributed</b> — Queues, pub/sub, sagas, DLQs, leader election, locks, CAP. <span class="none">(15–20 · 30 · 35 · 31–32)</span></li><li><b>Harden and operate</b> — Secrets, IAM, OAuth, TLS, WAF, SLOs, incidents, postmortems. <span class="none">(64–72 · 60–63 · 91–93)</span></li>
+      </ol>
+    </div>
+    <div class="grid" style="margin-top:26px">
+      <div>
+        <h3>How this was built</h3>
+        Every row links to one specific YouTube lecture — no channel homepages, no invented video IDs. IDs were pulled from YouTube search and course playlists, then resolved individually. Live-checked 2026-10-22.
+      </div>
+      <div>
+        <h3>Reading the columns</h3>
+        <b>Used for</b> = the mechanism. <b>Use case</b> = a concrete scenario. <b>MIT / Stanford</b> = the closest formal course; an em dash means none covers it well.
+      </div>
+      <div>
+        <h3>Companion file</h3>
+        <code style="color:#c7d2fe">System-Design-Atlas.xlsx</code> — same dataset, sortable and filterable, for note-taking offline.
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var KEY = "sda-done-v1";
+  var done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch(e) {}
+
+  var q = document.getElementById("q");
+  var hideDone = document.getElementById("hideDone");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  var items = Array.prototype.slice.call(document.querySelectorAll("tr.item"));
+  var secs = Array.prototype.slice.call(document.querySelectorAll("tbody.sec"));
+  var cnt = document.getElementById("cnt");
+  var fill = document.getElementById("barFill");
+  var pctStat = document.getElementById("pctStat");
+  var empty = document.getElementById("empty");
+  var filter = "all";
+
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(Array.from(done))); } catch(e) {} }
+
+  function paintProgress(){
+    var n = done.size, total = items.length, pct = Math.round(n/total*100);
+    cnt.textContent = n + "/" + total;
+    fill.style.width = pct + "%";
+    pctStat.textContent = pct + "%";
+  }
+
+  function apply(){
+    var term = q.value.trim().toLowerCase();
+    var visible = 0;
+    items.forEach(function(tr){
+      var n = tr.getAttribute("data-n");
+      var ok = (filter === "all" || tr.getAttribute("data-s") === filter)
+            && (!term || tr.textContent.toLowerCase().indexOf(term) !== -1)
+            && (!hideDone.checked || !done.has(n));
+      tr.style.display = ok ? "" : "none";
+      if (ok) visible++;
+      tr.classList.toggle("done", done.has(n));
+    });
+    secs.forEach(function(tb){
+      var any = Array.prototype.some.call(tb.querySelectorAll("tr.item"), function(tr){ return tr.style.display !== "none"; });
+      tb.style.display = any ? "" : "none";
+    });
+    empty.style.display = visible ? "none" : "";
+  }
+
+  document.querySelectorAll(".chk input").forEach(function(cb){
+    var n = cb.getAttribute("data-n");
+    cb.checked = done.has(n);
+    cb.addEventListener("change", function(){
+      if (cb.checked) done.add(n); else done.delete(n);
+      save(); paintProgress(); apply();
+    });
+  });
+
+  chips.forEach(function(ch){
+    ch.addEventListener("click", function(){
+      chips.forEach(function(c){ c.classList.remove("on"); });
+      ch.classList.add("on");
+      filter = ch.getAttribute("data-f");
+      apply();
+    });
+  });
+
+  q.addEventListener("input", apply);
+  hideDone.addEventListener("change", apply);
+  document.addEventListener("keydown", function(e){
+    if (e.key === "/" && document.activeElement !== q){ e.preventDefault(); q.focus(); }
+    if (e.key === "Escape"){ q.value = ""; apply(); q.blur(); }
+  });
+
+  function syncOffset(){
+    var tb = document.querySelector(".toolbar");
+    if (tb) document.documentElement.style.setProperty("--thead-top", tb.offsetHeight + "px");
+  }
+  window.addEventListener("resize", syncOffset);
+
+  syncOffset();
+  paintProgress(); apply();
+})();
+</script>
+</body>
+</html>
